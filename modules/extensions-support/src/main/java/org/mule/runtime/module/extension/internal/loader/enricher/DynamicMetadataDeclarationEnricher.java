@@ -16,7 +16,6 @@ import org.mule.runtime.api.meta.model.declaration.fluent.ExtensionDeclaration;
 import org.mule.runtime.api.meta.model.declaration.fluent.OperationDeclaration;
 import org.mule.runtime.api.meta.model.declaration.fluent.ParameterDeclaration;
 import org.mule.runtime.api.meta.model.declaration.fluent.ParameterDeclarer;
-import org.mule.runtime.api.meta.model.declaration.fluent.ParameterGroupDeclaration;
 import org.mule.runtime.api.meta.model.declaration.fluent.SourceDeclaration;
 import org.mule.runtime.api.meta.model.declaration.fluent.TypedDeclaration;
 import org.mule.runtime.api.meta.model.declaration.fluent.WithOutputDeclaration;
@@ -32,6 +31,7 @@ import org.mule.runtime.extension.api.exception.IllegalParameterModelDefinitionE
 import org.mule.runtime.extension.api.loader.DeclarationEnricher;
 import org.mule.runtime.extension.api.loader.ExtensionLoadingContext;
 import org.mule.runtime.extension.api.metadata.MetadataResolverFactory;
+import org.mule.runtime.extension.api.metadata.NullMetadataResolver;
 import org.mule.runtime.extension.api.property.MetadataKeyIdModelProperty;
 import org.mule.runtime.extension.api.property.MetadataKeyPartModelProperty;
 import org.mule.runtime.module.extension.internal.loader.java.property.ImplementingMethodModelProperty;
@@ -81,17 +81,15 @@ public class DynamicMetadataDeclarationEnricher implements DeclarationEnricher {
           @Override
           public void onSource(SourceDeclaration declaration) {
             enrichSourceMetadata(declaration);
+            declaration.getAllParameters().forEach(param -> enrichParameter(param));
           }
 
           @Override
           public void onOperation(OperationDeclaration declaration) {
             enrichOperationMetadata(declaration);
+            declaration.getAllParameters().forEach(param -> enrichParameter(param));
           }
 
-          @Override
-          protected void onParameter(ParameterGroupDeclaration parameterGroup, ParameterDeclaration declaration) {
-            enrichParameter(declaration);
-          }
         }.walk(extensionLoadingContext.getExtensionDeclarer().getDeclaration());
       }
     }
@@ -233,12 +231,14 @@ public class DynamicMetadataDeclarationEnricher implements DeclarationEnricher {
      */
     private void parseMetadataAnnotations(AnnotatedElement element, BaseDeclaration baseDeclaration) {
       if (element.isAnnotationPresent(MetadataKeyId.class)) {
-        baseDeclaration.addModelProperty(new MetadataKeyPartModelProperty(1));
+        boolean hasKeyResolver = !NullMetadataResolver.class.isAssignableFrom(element.getAnnotation(MetadataKeyId.class).value());
+        baseDeclaration.addModelProperty(new MetadataKeyPartModelProperty(1, hasKeyResolver));
       }
 
       if (element.isAnnotationPresent(MetadataKeyPart.class)) {
         MetadataKeyPart metadataKeyPart = element.getAnnotation(MetadataKeyPart.class);
-        baseDeclaration.addModelProperty(new MetadataKeyPartModelProperty(metadataKeyPart.order()));
+        baseDeclaration.addModelProperty(new MetadataKeyPartModelProperty(metadataKeyPart.order(),
+                                                                          metadataKeyPart.providedByKeyResolver()));
       }
     }
   }

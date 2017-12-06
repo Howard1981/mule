@@ -22,6 +22,7 @@ import org.mule.runtime.api.metadata.MetadataKeyProvider;
 import org.mule.runtime.api.metadata.MetadataKeysContainer;
 import org.mule.runtime.api.metadata.MetadataKeysContainerBuilder;
 import org.mule.runtime.api.metadata.resolving.MetadataResult;
+import org.mule.runtime.api.metadata.resolving.PartialTypeKeysResolver;
 import org.mule.runtime.api.metadata.resolving.TypeKeysResolver;
 import org.mule.runtime.extension.api.annotation.metadata.MetadataKeyId;
 import org.mule.runtime.extension.api.metadata.NullMetadataKey;
@@ -63,6 +64,11 @@ class MetadataKeysDelegate extends BaseMetadataDelegate {
    * Dynamic keys are a available or the retrieval fails for any reason
    */
   MetadataResult<MetadataKeysContainer> getMetadataKeys(MetadataContext context) {
+    return getMetadataKeys(context, null);
+  }
+
+  MetadataResult<MetadataKeysContainer> getMetadataKeys(MetadataContext context, Object partialKey) {
+
     final TypeKeysResolver keyResolver = resolverFactory.getKeyResolver();
     final String componentResolverName = keyResolver.getCategoryName();
     final MetadataKeysContainerBuilder keysContainer = MetadataKeysContainerBuilder.getInstance();
@@ -70,7 +76,13 @@ class MetadataKeysDelegate extends BaseMetadataDelegate {
       return success(keysContainer.add(componentResolverName, ImmutableSet.of(new NullMetadataKey())).build());
     }
     try {
-      final Set<MetadataKey> metadataKeys = keyResolver.getKeys(context);
+      Set<MetadataKey> metadataKeys;
+      if (partialKey != null && keyResolver instanceof PartialTypeKeysResolver) {
+        metadataKeys = ((PartialTypeKeysResolver) keyResolver).getKeys(context, partialKey);
+      } else {
+        metadataKeys = keyResolver.getKeys(context);
+      }
+
       final Map<Integer, String> partOrder = getPartOrderMapping(keyParts);
       final Set<MetadataKey> enrichedMetadataKeys = metadataKeys.stream()
           .map(metadataKey -> cloneAndEnrichMetadataKey(metadataKey, partOrder))

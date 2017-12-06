@@ -27,14 +27,13 @@ import java.util.Arrays;
 import java.util.List;
 
 @Alias("harvest-apples")
-@MetadataScope(keysResolver = HarvestAppleKeyResolver.class,
-    outputResolver = HarvestAppleKeyResolver.class)
+@MetadataScope(outputResolver = HarvestAppleKeyResolver.class)
 public class HarvestApplesSource extends Source<Apple, HarvestApplesAttributes> {
 
   @Config
   private AppleConfig appleConfig;
 
-  @MetadataKeyId
+  @MetadataKeyId(HarvestAppleKeyResolver.class)
   @Parameter
   @Optional
   private String key;
