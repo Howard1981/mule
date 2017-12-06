@@ -93,7 +93,8 @@ public final class CustomStaticTypeDeclarationEnricher implements DeclarationEnr
   private <T extends BaseDeclaration & TypedDeclaration> void declareCustomType(T declaration, MetadataType overrideType) {
     MetadataType type = declaration.getType();
     Class<?> clazz = getType(type).orElseThrow(() -> new IllegalStateException("Could not find class in type [" + type + "]"));
-    Set<TypeAnnotation> annotations = new HashSet<>(asList(new ClassInformationAnnotation(clazz), new CustomDefinedStaticTypeAnnotation()));
+    Set<TypeAnnotation> annotations =
+        new HashSet<>(asList(new ClassInformationAnnotation(clazz), new CustomDefinedStaticTypeAnnotation()));
     declaration.setType(new MetadataTypeEnricher().enrich(overrideType, annotations), false);
   }
 

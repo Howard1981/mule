@@ -46,7 +46,7 @@
           "format": "java",
           "type": "Object",
           "annotations": {
-            "type": "java.lang.Object",
+            "typeId": "java.lang.Object",
             "classInformation": {
               "classname": "java.lang.Object",
               "hasDefaultConstructor": true,
@@ -95,7 +95,7 @@
                 "format": "java",
                 "type": "Object",
                 "annotations": {
-                  "type": "java.lang.Object",
+                  "typeId": "java.lang.Object",
                   "classInformation": {
                     "classname": "java.lang.Object",
                     "hasDefaultConstructor": true,
@@ -302,19 +302,7 @@
                 "format": "java",
                 "type": "Boolean",
                 "annotations": {
-                  "type": "boolean",
-                  "classInformation": {
-                    "classname": "boolean",
-                    "hasDefaultConstructor": false,
-                    "isInterface": false,
-                    "isInstantiable": false,
-                    "isAbstract": true,
-                    "isFinal": true,
-                    "implementedInterfaces": [],
-                    "parent": "",
-                    "genericTypes": [],
-                    "isMap": false
-                  }
+                  "typeId": "boolean"
                 }
               },
               "hasDynamicType": false,
@@ -553,7 +541,7 @@
           "format": "java",
           "type": "Object",
           "annotations": {
-            "type": "java.lang.Object",
+            "typeId": "java.lang.Object",
             "classInformation": {
               "classname": "java.lang.Object",
               "hasDefaultConstructor": true,
@@ -584,7 +572,7 @@
                 "format": "java",
                 "type": "Object",
                 "annotations": {
-                  "type": "java.lang.Object",
+                  "typeId": "java.lang.Object",
                   "classInformation": {
                     "classname": "java.lang.Object",
                     "hasDefaultConstructor": true,
@@ -705,7 +693,7 @@
             "item": {
               "type": "Object",
               "annotations": {
-                "type": "java.lang.Object",
+                "typeId": "java.lang.Object",
                 "classInformation": {
                   "classname": "java.lang.Object",
                   "hasDefaultConstructor": true,
@@ -756,7 +744,7 @@
                 "item": {
                   "type": "Object",
                   "annotations": {
-                    "type": "java.lang.Object",
+                    "typeId": "java.lang.Object",
                     "classInformation": {
                       "classname": "java.lang.Object",
                       "hasDefaultConstructor": true,
@@ -888,7 +876,7 @@
                 "format": "java",
                 "type": "Object",
                 "annotations": {
-                  "type": "org.mule.test.function.extension.SimplePojo",
+                  "typeId": "org.mule.test.function.extension.SimplePojo",
                   "classInformation": {
                     "classname": "org.mule.test.function.extension.SimplePojo",
                     "hasDefaultConstructor": true,
@@ -973,7 +961,7 @@
           "format": "java",
           "type": "Object",
           "annotations": {
-            "type": "java.lang.Object",
+            "typeId": "java.lang.Object",
             "classInformation": {
               "classname": "java.lang.Object",
               "hasDefaultConstructor": true,
