@@ -102,8 +102,8 @@ public final class CustomStaticTypeDeclarationEnricher implements DeclarationEnr
       private void declareParametersCustomStaticTypes(WithParametersDeclaration operation) {
         for (ParameterDeclaration param : operation.getAllParameters()) {
           param.getModelProperty(ImplementingParameterModelProperty.class)
-            .map(ImplementingParameterModelProperty::getParameter)
-            .ifPresent(annotated -> getInputType(annotated).ifPresent(type -> declareCustomType(param, type)));
+              .map(ImplementingParameterModelProperty::getParameter)
+              .ifPresent(annotated -> getInputType(annotated).ifPresent(type -> declareCustomType(param, type)));
         }
       }
     }.walk(extensionLoadingContext.getExtensionDeclarer().getDeclaration());
