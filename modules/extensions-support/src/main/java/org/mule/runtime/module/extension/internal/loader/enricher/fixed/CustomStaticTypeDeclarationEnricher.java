@@ -31,6 +31,7 @@ import org.mule.runtime.api.meta.model.declaration.fluent.WithSourcesDeclaration
 import org.mule.runtime.api.metadata.resolving.InputStaticTypeResolver;
 import org.mule.runtime.api.metadata.resolving.StaticResolver;
 import org.mule.runtime.core.api.util.IOUtils;
+import org.mule.runtime.extension.api.annotation.metadata.MetadataScope;
 import org.mule.runtime.extension.api.annotation.metadata.OutputResolver;
 import org.mule.runtime.extension.api.annotation.metadata.TypeResolver;
 import org.mule.runtime.extension.api.annotation.metadata.fixed.InputJsonType;
@@ -51,6 +52,7 @@ import java.lang.reflect.AnnotatedElement;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 
 /**
  * Overrides the default output and input loaded types for the ones specified by the user using the custom static types features,
@@ -74,27 +76,27 @@ public final class CustomStaticTypeDeclarationEnricher implements DeclarationEnr
       @Override
       protected void onOperation(WithOperationsDeclaration owner, OperationDeclaration operation) {
         operation.getModelProperty(ImplementingMethodModelProperty.class)
-          .map(ImplementingMethodModelProperty::getMethod)
-          .ifPresent(method -> {
-            getOutputType(method).ifPresent(type -> declareCustomType(operation.getOutput(), type));
-            getAttributesType(method).ifPresent(type -> declareCustomType(operation.getOutputAttributes(), type));
-          });
+            .map(ImplementingMethodModelProperty::getMethod)
+            .ifPresent(method -> {
+              getOutputType(method).ifPresent(type -> declareCustomType(operation.getOutput(), type));
+              getAttributesType(method).ifPresent(type -> declareCustomType(operation.getOutputAttributes(), type));
+            });
 
         for (ParameterDeclaration param : operation.getAllParameters()) {
           param.getModelProperty(ImplementingParameterModelProperty.class)
-            .map(ImplementingParameterModelProperty::getParameter)
-            .ifPresent(annotated -> getInputType(annotated).ifPresent(type -> declareCustomType(param, type)));
+              .map(ImplementingParameterModelProperty::getParameter)
+              .ifPresent(annotated -> getInputType(annotated).ifPresent(type -> declareCustomType(param, type)));
         }
       }
 
       @Override
       protected void onSource(WithSourcesDeclaration owner, SourceDeclaration source) {
         source.getModelProperty(ImplementingTypeModelProperty.class)
-          .map(ImplementingTypeModelProperty::getType)
-          .ifPresent(clazz -> {
-            getOutputType(clazz).ifPresent(type -> declareCustomType(source.getOutput(), type));
-            getAttributesType(clazz).ifPresent(type -> declareCustomType(source.getOutputAttributes(), type));
-          });
+            .map(ImplementingTypeModelProperty::getType)
+            .ifPresent(clazz -> {
+              getOutputType(clazz).ifPresent(type -> declareCustomType(source.getOutput(), type));
+              getAttributesType(clazz).ifPresent(type -> declareCustomType(source.getOutputAttributes(), type));
+            });
       }
     }.walk(extensionLoadingContext.getExtensionDeclarer().getDeclaration());
   }
@@ -112,6 +114,10 @@ public final class CustomStaticTypeDeclarationEnricher implements DeclarationEnr
     if (resolver != null && isStaticResolver(resolver.attributes())) {
       return getCustomStaticType(resolver.attributes());
     }
+    MetadataScope scope = element.getAnnotation(MetadataScope.class);
+    if (scope != null && isStaticResolver(scope.attributesResolver())) {
+      return getCustomStaticType(scope.attributesResolver());
+    }
     return empty();
   }
 
@@ -121,12 +127,16 @@ public final class CustomStaticTypeDeclarationEnricher implements DeclarationEnr
       return getXmlType(xml.outputSchema(), xml.outputQName());
     }
     OutputJsonType json = element.getAnnotation(OutputJsonType.class);
-    if (json != null) {
+    if (json != null && isNotBlank(json.outputSchema())) {
       return getJsonType(json.outputSchema());
     }
     OutputResolver resolver = element.getAnnotation(OutputResolver.class);
     if (resolver != null && isStaticResolver(resolver.output())) {
       return getCustomStaticType(resolver.output());
+    }
+    MetadataScope scope = element.getAnnotation(MetadataScope.class);
+    if (scope != null && isStaticResolver(scope.outputResolver())) {
+      return getCustomStaticType(scope.outputResolver());
     }
     return empty();
   }

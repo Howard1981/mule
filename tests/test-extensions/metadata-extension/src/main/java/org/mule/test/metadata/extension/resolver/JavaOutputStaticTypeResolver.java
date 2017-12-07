@@ -17,6 +17,6 @@ public class JavaOutputStaticTypeResolver extends OutputStaticTypeResolver {
 
   @Override
   public MetadataType getStaticMetadata() {
-    return BaseTypeBuilder.create(MetadataFormat.JAVA).objectType().build();
+    return BaseTypeBuilder.create(MetadataFormat.JAVA).objectType().id("custom-java").build();
   }
 }

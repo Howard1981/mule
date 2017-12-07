@@ -16,6 +16,7 @@ import org.mule.runtime.extension.api.annotation.metadata.fixed.InputXmlType;
 import org.mule.runtime.extension.api.annotation.metadata.fixed.OutputJsonType;
 import org.mule.runtime.extension.api.annotation.metadata.fixed.OutputXmlType;
 import org.mule.runtime.extension.api.annotation.param.MediaType;
+import org.mule.runtime.extension.api.runtime.operation.Result;
 import org.mule.test.metadata.extension.resolver.CsvInputStaticTypeResolver;
 import org.mule.test.metadata.extension.resolver.JavaOutputStaticTypeResolver;
 import org.mule.test.metadata.extension.resolver.JsonInputStaticTypeResolver;
@@ -63,6 +64,21 @@ public class CustomStaticMetadataOperations {
   @MediaType("application/json")
   public String customTypeInput(@TypeResolver(JsonInputStaticTypeResolver.class) InputStream type) {
     return IOUtils.toString(type);
+  }
+
+  @OutputXmlType(attributesSchema = "order.xsd", attributesQName = "shiporder")
+  public Result<Integer, InputStream> xmlAttributes() {
+    return Result.<Integer, InputStream>builder().output(1).build();
+  }
+
+  @OutputResolver(output = CsvInputStaticTypeResolver.class, attributes = JsonStaticAttributesTypeResolver.class)
+  public Result<Integer, InputStream> customAttributesOutput() {
+    return Result.<Integer, InputStream>builder().output(1).build();
+  }
+
+  @OutputJsonType(attributesSchema = "person-schema.json")
+  public Result<Integer, InputStream> jsonAttributes() {
+    return Result.<Integer, InputStream>builder().output(1).build();
   }
 
   @OutputResolver(output = JavaOutputStaticTypeResolver.class)
