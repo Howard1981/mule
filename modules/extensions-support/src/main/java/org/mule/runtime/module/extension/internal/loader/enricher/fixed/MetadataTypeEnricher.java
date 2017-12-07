@@ -54,6 +54,11 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+/**
+ * Gives the capability to enrich a {@link MetadataType} with more {@link TypeAnnotation}s.
+ *
+ * @since 1.1
+ */
 class MetadataTypeEnricher {
 
   public MetadataType enrich(MetadataType target, Set<TypeAnnotation> annotations) {

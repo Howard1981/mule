@@ -7,71 +7,26 @@
 package org.mule.test.module.extension;
 
 import static java.lang.String.format;
-import static org.apache.commons.lang3.StringUtils.EMPTY;
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.collection.IsMapContaining.hasKey;
 import static org.junit.Assert.assertThat;
-import static org.mule.functional.junit4.matchers.ThrowableRootCauseMatcher.hasRootCause;
-import static org.mule.runtime.api.message.Message.of;
-import static org.mule.runtime.api.metadata.DataType.MULE_MESSAGE_COLLECTION;
-import static org.mule.runtime.api.metadata.MediaType.APPLICATION_JAVA;
 import static org.mule.runtime.core.api.event.EventContextFactory.create;
-import static org.mule.tck.MuleTestUtils.getTestFlow;
-import static org.mule.tck.junit4.matcher.DataTypeCompatibilityMatcher.assignableTo;
-import static org.mule.test.heisenberg.extension.HeisenbergConnectionProvider.SAUL_OFFICE_NUMBER;
-import static org.mule.test.heisenberg.extension.HeisenbergOperations.CALL_GUS_MESSAGE;
-import static org.mule.test.heisenberg.extension.HeisenbergOperations.CURE_CANCER_MESSAGE;
-import static org.mule.test.heisenberg.extension.exception.HeisenbergConnectionExceptionEnricher.ENRICHED_MESSAGE;
-import static org.mule.test.heisenberg.extension.model.HealthStatus.CANCER;
-import static org.mule.test.heisenberg.extension.model.HealthStatus.DEAD;
-import static org.mule.test.heisenberg.extension.model.HealthStatus.HEALTHY;
-import static org.mule.test.heisenberg.extension.model.KnockeableDoor.knock;
-import static org.mule.test.heisenberg.extension.model.Ricin.RICIN_KILL_MESSAGE;
+import static org.mule.test.metadata.extension.CustomStaticMetadataOperations.CSV_VALUE;
+import static org.mule.test.metadata.extension.CustomStaticMetadataOperations.JSON_VALUE;
+import static org.mule.test.metadata.extension.CustomStaticMetadataOperations.XML_VALUE;
 
-import org.mule.functional.api.flow.FlowRunner;
-import org.mule.runtime.api.connection.ConnectionException;
-import org.mule.runtime.api.exception.MuleException;
-import org.mule.runtime.api.message.Message;
-import org.mule.runtime.api.metadata.TypedValue;
-import org.mule.runtime.core.api.event.CoreEvent;
-import org.mule.runtime.core.api.extension.ExtensionManager;
-import org.mule.runtime.extension.api.runtime.parameter.ParameterResolver;
-import org.mule.tck.testmodels.fruit.Apple;
-import org.mule.test.heisenberg.extension.HeisenbergExtension;
-import org.mule.test.heisenberg.extension.exception.HealthException;
-import org.mule.test.heisenberg.extension.exception.HeisenbergException;
-import org.mule.test.heisenberg.extension.model.BarberPreferences;
-import org.mule.test.heisenberg.extension.model.CarDealer;
-import org.mule.test.heisenberg.extension.model.CarWash;
-import org.mule.test.heisenberg.extension.model.HealthStatus;
-import org.mule.test.heisenberg.extension.model.Investment;
-import org.mule.test.heisenberg.extension.model.KnockeableDoor;
-import org.mule.test.heisenberg.extension.model.PersonalInfo;
-import org.mule.test.heisenberg.extension.model.Ricin;
-import org.mule.test.heisenberg.extension.model.SaleInfo;
-import org.mule.test.heisenberg.extension.model.Weapon;
-import org.mule.test.heisenberg.extension.model.types.IntegerAttributes;
-import org.mule.test.heisenberg.extension.model.types.WeaponType;
-import org.mule.test.module.extension.internal.util.ExtensionsTestUtils;
+import org.mule.runtime.api.streaming.bytes.CursorStreamProvider;
+import org.mule.runtime.core.api.util.IOUtils;
 
-import java.io.ByteArrayInputStream;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
-import org.hamcrest.Matchers;
-import org.hamcrest.collection.IsMapContaining;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -89,25 +44,49 @@ public class CustomStaticMetadataOperationExecutionTestCase extends AbstractExte
   @Test
   public void xmlOutput() throws Exception {
     Object payload = flowRunner("output").keepStreamsOpen().run().getMessage().getPayload().getValue();
-    assertThat(payload, is(notNullValue()));
+    assertThat(IOUtils.toString(((CursorStreamProvider) payload).openCursor()), is(XML_VALUE));
   }
 
   @Test
   public void xmlInput() throws Exception {
-    InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream("metadata-static.xml");
-    Object payload = flowRunner("input").withPayload(is).run().getMessage().getPayload().getValue();
-    assertThat(payload, is(notNullValue()));
+    Object payload = flowRunner("input").withPayload(XML_VALUE).run().getMessage().getPayload().getValue();
+    assertThat(payload, is(XML_VALUE));
+  }
+
+  @Test
+  public void jsonInputToMap() throws Exception {
+    Object payload = flowRunner("jsonInputToMap").keepStreamsOpen().run().getMessage().getPayload().getValue();
+    assertThat(payload, is(12));
+  }
+
+  @Test
+  public void jsonInputToStream() throws Exception {
+    String payload = (String) flowRunner("jsonInputToStream").keepStreamsOpen().run().getMessage().getPayload().getValue();
+    assertEqualJsons(payload, JSON_VALUE);
+  }
+
+  @Test
+  public void jsonOutput() throws Exception {
+    Object payload = flowRunner("jsonOutput").keepStreamsOpen().run().getMessage().getPayload().getValue();
+    assertEqualJsons(IOUtils.toString(((CursorStreamProvider) payload).openCursor()), JSON_VALUE);
   }
 
   @Test
   public void customOutput() throws Exception {
     Object payload = flowRunner("custom-output").run().getMessage().getPayload().getValue();
-    assertThat(payload, is(notNullValue()));
+    assertThat(payload, is(CSV_VALUE));
   }
 
   @Test
   public void customInput() throws Exception {
-    Object payload = flowRunner("custom-input").withPayload("{\"book\": \"aBook\"}").run().getMessage().getPayload().getValue();
-    assertThat(payload, is(notNullValue()));
+    String payload = (String) flowRunner("custom-input").run().getMessage().getPayload().getValue();
+    assertEqualJsons(payload, JSON_VALUE);
+  }
+
+  private void assertEqualJsons(String payload, String expected) throws IOException {
+    ObjectMapper mapper = new ObjectMapper();
+    JsonNode payloadTree = mapper.readTree(payload);
+    JsonNode expectedTree = mapper.readTree(expected);
+    assertThat(payloadTree, is(expectedTree));
   }
 }

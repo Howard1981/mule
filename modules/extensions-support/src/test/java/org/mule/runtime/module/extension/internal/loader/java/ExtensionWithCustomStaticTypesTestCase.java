@@ -4,10 +4,12 @@
  * license, a copy of which has been included with this distribution in the
  * LICENSE.txt file.
  */
-package org.mule.runtime.module.extension.internal.loader.enricher;
+package org.mule.runtime.module.extension.internal.loader.java;
 
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasSize;
 import static org.mule.metadata.api.model.MetadataFormat.CSV;
 import static org.mule.metadata.api.model.MetadataFormat.JSON;
 import static org.mule.metadata.api.model.MetadataFormat.XML;
@@ -15,6 +17,7 @@ import static org.mule.runtime.module.extension.api.util.MuleExtensionUtils.load
 
 import org.mule.metadata.api.model.MetadataFormat;
 import org.mule.metadata.api.model.MetadataType;
+import org.mule.metadata.api.model.ObjectType;
 import org.mule.runtime.api.meta.Typed;
 import org.mule.runtime.api.meta.model.ExtensionModel;
 import org.mule.runtime.api.meta.model.OutputModel;
@@ -26,7 +29,7 @@ import org.mule.test.metadata.extension.MetadataExtension;
 import org.junit.Test;
 import scala.annotation.meta.param;
 
-public class CustomStaticTypeDeclarationEnricherTestCase extends AbstractMuleTestCase {
+public class ExtensionWithCustomStaticTypesTestCase extends AbstractMuleTestCase {
 
   ExtensionModel extension = loadExtension(MetadataExtension.class);
 
@@ -48,6 +51,28 @@ public class CustomStaticTypeDeclarationEnricherTestCase extends AbstractMuleTes
     MetadataType type = output.getType();
     assertThat(type.getMetadataFormat(), is(XML));
     assertThat(type.toString(), is("shiporder"));
+  }
+
+  @Test
+  public void withInputJsonType() throws Exception {
+    OperationModel o = getOperation("jsonInput");
+    ParameterModel param = o.getAllParameterModels().get(0);
+    MetadataType type = param.getType();
+    assertThat(param.hasDynamicType(), is(false));
+    assertThat(type.getMetadataFormat(), is(JSON));
+    assertThat(type, instanceOf(ObjectType.class));
+    assertThat(((ObjectType) type).getFields(), hasSize(3));
+  }
+
+  @Test
+  public void withOutputJsonType() throws Exception {
+    OperationModel o = getOperation("jsonOutput");
+    OutputModel output = o.getOutput();
+    assertThat(output.hasDynamicType(), is(false));
+    MetadataType type = output.getType();
+    assertThat(type.getMetadataFormat(), is(JSON));
+    assertThat(type, instanceOf(ObjectType.class));
+    assertThat(((ObjectType) type).getFields(), hasSize(3));
   }
 
   @Test

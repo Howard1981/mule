@@ -187,8 +187,10 @@ public class MetadataComponentModelValidator implements ExtensionModelValidator 
 
         @Override
         public void visitObject(ObjectType objectType) {
-          objectType.getOpenRestriction().ifPresent(t -> checkValidType(component, extensionModel, t, problemsReporter));
-          checkValidType(component, extensionModel, objectType, problemsReporter);
+          if (!isCustomStaticType(objectType)) {
+            objectType.getOpenRestriction().ifPresent(t -> checkValidType(component, extensionModel, t, problemsReporter));
+            checkValidType(component, extensionModel, objectType, problemsReporter);
+          }
         }
 
         @Override
@@ -197,6 +199,10 @@ public class MetadataComponentModelValidator implements ExtensionModelValidator 
         }
       });
     }
+  }
+
+  private boolean isCustomStaticType(ObjectType objectType) {
+    return objectType.getAnnotation(CustomDefinedStaticTypeAnnotation.class).isPresent();
   }
 
   // todo refactor with metadata factory getCategoryName()
@@ -237,7 +243,7 @@ public class MetadataComponentModelValidator implements ExtensionModelValidator 
   private void failIfTypeIsObject(ComponentModel componentModel, ExtensionModel extensionModel,
                                   MetadataType metadataType, String componentTypeName, Class<?> type,
                                   ProblemsReporter problemsReporter) {
-    if (Object.class.equals(type) && !metadataType.getAnnotation(CustomDefinedStaticTypeAnnotation.class).isPresent()) {
+    if (Object.class.equals(type)) {
       problemsReporter
           .addError(new Problem(extensionModel,
                                 format("Extension '%s' specifies a/an %s named '%s' with type '%s' as return type. Components that return a type "
