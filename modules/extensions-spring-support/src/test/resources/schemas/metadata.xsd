@@ -875,6 +875,8 @@
         <xs:sequence minOccurs="0" maxOccurs="1">
           <xs:element minOccurs="0" maxOccurs="1" ref="mule:abstract-redelivery-policy"></xs:element>
         </xs:sequence>
+        <xs:attribute type="xs:string" use="required" name="order"></xs:attribute>
+        <xs:attribute type="xs:string" use="required" name="person"></xs:attribute>
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>

@@ -38,4 +38,17 @@
         <metadata:json-output/>
     </flow>
 
+    <flow name="onSuccessCustomType" initialState="stopped">
+        <metadata:custom-static-metadata
+                order="#[payload]"
+                person="#[%dw 2.0 output application/json --- {age: 12, dni: 1478231}]"/>
+        <set-payload value="#[%dw 2.0 output application/xml --- {person: {age: 12}}]"/>
+    </flow>
+
+    <flow name="onErrorCustomType" initialState="stopped">
+        <metadata:custom-static-metadata
+                person="#[%dw 2.0 output application/json --- {age: 12, dni: 1478231}]"
+                order="#[%dw 2.0 output application/xml --- {person: {age: 12}}]"/>
+        <set-payload value="#[hi ++]"/>
+    </flow>
 </mule>

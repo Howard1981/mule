@@ -67,7 +67,7 @@ class MetadataTypeEnricher {
     return visitor.type;
   }
 
-  private class TypeEnricherVisitor extends MetadataTypeVisitor {
+  private static class TypeEnricherVisitor extends MetadataTypeVisitor {
 
     private MetadataType type;
     private final MetadataType target;

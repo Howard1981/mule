@@ -117,6 +117,18 @@ public class ExtensionWithCustomStaticTypesTestCase extends AbstractMuleTestCase
     assertCustomJavaType(s.getOutput());
   }
 
+  @Test
+  public void sourceOnErrorCustomType() {
+    SourceModel s = getSource("custom-static-metadata");
+    assertJson(s.getErrorCallback().get().getAllParameterModels().get(0));
+  }
+
+  @Test
+  public void sourceOnSuccessCustomType() {
+    SourceModel s = getSource("custom-static-metadata");
+    assertXml(s.getSuccessCallback().get().getAllParameterModels().get(0));
+  }
+
   private SourceModel getSource(String name) {
     return extension.getSourceModel(name).orElseThrow(() -> new RuntimeException("Source Not found"));
   }

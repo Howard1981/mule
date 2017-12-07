@@ -13,13 +13,21 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.collection.IsMapContaining.hasKey;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 import static org.mule.runtime.core.api.event.EventContextFactory.create;
+import static org.mule.tck.probe.PollingProber.probe;
 import static org.mule.test.metadata.extension.CustomStaticMetadataOperations.CSV_VALUE;
 import static org.mule.test.metadata.extension.CustomStaticMetadataOperations.JSON_VALUE;
 import static org.mule.test.metadata.extension.CustomStaticMetadataOperations.XML_VALUE;
+import static org.mule.test.module.extension.source.HeisenbergMessageSourceTestCase.POLL_DELAY_MILLIS;
+import static org.mule.test.module.extension.source.HeisenbergMessageSourceTestCase.TIMEOUT_MILLIS;
 
+import org.mule.runtime.api.exception.MuleException;
 import org.mule.runtime.api.streaming.bytes.CursorStreamProvider;
+import org.mule.runtime.core.api.construct.Flow;
 import org.mule.runtime.core.api.util.IOUtils;
+import org.mule.test.heisenberg.extension.HeisenbergSource;
+import org.mule.test.metadata.extension.CustomStaticMetadataSource;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -27,11 +35,19 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.io.InputStream;
 
+import javax.inject.Inject;
+
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 public class CustomStaticMetadataOperationExecutionTestCase extends AbstractExtensionFunctionalTestCase {
+
+  @Inject
+  public Flow onSuccessCustomType;
+
+  @Inject
+  public Flow onErrorCustomType;
 
   @Rule
   public ExpectedException expectedException = ExpectedException.none();
@@ -75,6 +91,41 @@ public class CustomStaticMetadataOperationExecutionTestCase extends AbstractExte
   public void customOutput() throws Exception {
     Object payload = flowRunner("custom-output").run().getMessage().getPayload().getValue();
     assertThat(payload, is(CSV_VALUE));
+  }
+
+  @Test
+  public void onErrorCustomType() throws MuleException {
+    onErrorCustomType.start();
+    probe(5000, 20, () -> {
+      if (CustomStaticMetadataSource.onErrorResult != null) {
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode payloadTree = mapper.readTree(CustomStaticMetadataSource.onErrorResult);
+        JsonNode expectedTree = mapper.readTree(JSON_VALUE);
+        return payloadTree.equals(expectedTree);
+      } else {
+        return false;
+      }
+    }, () -> "OnError was not called");
+  }
+
+  @Test
+  public void onSuccessCustomType() throws MuleException {
+    String expected = "<?xml version='1.0' encoding='UTF-8'?>\n"
+        + "<person>\n"
+        + "  <age>12</age>\n"
+        + "</person>";
+    onSuccessCustomType.start();
+    probe(5000, 20, () -> {
+      if (CustomStaticMetadataSource.onSuccessResult != null) {
+        if (CustomStaticMetadataSource.onSuccessResult.equals(expected)) {
+          return true;
+        } else {
+          throw new RuntimeException("That Xml was not expected");
+        }
+      } else {
+        return false;
+      }
+    }, () -> "OnSuccess was not called");
   }
 
   @Test

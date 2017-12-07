@@ -27,6 +27,7 @@ import org.mule.runtime.api.meta.model.declaration.fluent.ParameterDeclaration;
 import org.mule.runtime.api.meta.model.declaration.fluent.SourceDeclaration;
 import org.mule.runtime.api.meta.model.declaration.fluent.TypedDeclaration;
 import org.mule.runtime.api.meta.model.declaration.fluent.WithOperationsDeclaration;
+import org.mule.runtime.api.meta.model.declaration.fluent.WithParametersDeclaration;
 import org.mule.runtime.api.meta.model.declaration.fluent.WithSourcesDeclaration;
 import org.mule.runtime.api.metadata.resolving.InputStaticTypeResolver;
 import org.mule.runtime.api.metadata.resolving.StaticResolver;
@@ -46,6 +47,7 @@ import org.mule.runtime.extension.api.loader.ExtensionLoadingContext;
 import org.mule.runtime.module.extension.internal.loader.java.property.ImplementingMethodModelProperty;
 import org.mule.runtime.module.extension.internal.loader.java.property.ImplementingParameterModelProperty;
 import org.mule.runtime.module.extension.internal.loader.java.property.ImplementingTypeModelProperty;
+import org.mule.runtime.module.extension.internal.loader.java.type.WithParameters;
 
 import java.io.InputStream;
 import java.lang.reflect.AnnotatedElement;
@@ -81,12 +83,7 @@ public final class CustomStaticTypeDeclarationEnricher implements DeclarationEnr
               getOutputType(method).ifPresent(type -> declareCustomType(operation.getOutput(), type));
               getAttributesType(method).ifPresent(type -> declareCustomType(operation.getOutputAttributes(), type));
             });
-
-        for (ParameterDeclaration param : operation.getAllParameters()) {
-          param.getModelProperty(ImplementingParameterModelProperty.class)
-              .map(ImplementingParameterModelProperty::getParameter)
-              .ifPresent(annotated -> getInputType(annotated).ifPresent(type -> declareCustomType(param, type)));
-        }
+        declareParametersCustomStaticTypes(operation);
       }
 
       @Override
@@ -97,6 +94,17 @@ public final class CustomStaticTypeDeclarationEnricher implements DeclarationEnr
               getOutputType(clazz).ifPresent(type -> declareCustomType(source.getOutput(), type));
               getAttributesType(clazz).ifPresent(type -> declareCustomType(source.getOutputAttributes(), type));
             });
+
+        source.getSuccessCallback().ifPresent(this::declareParametersCustomStaticTypes);
+        source.getErrorCallback().ifPresent(this::declareParametersCustomStaticTypes);
+      }
+
+      private void declareParametersCustomStaticTypes(WithParametersDeclaration operation) {
+        for (ParameterDeclaration param : operation.getAllParameters()) {
+          param.getModelProperty(ImplementingParameterModelProperty.class)
+            .map(ImplementingParameterModelProperty::getParameter)
+            .ifPresent(annotated -> getInputType(annotated).ifPresent(type -> declareCustomType(param, type)));
+        }
       }
     }.walk(extensionLoadingContext.getExtensionDeclarer().getDeclaration());
   }
@@ -157,11 +165,11 @@ public final class CustomStaticTypeDeclarationEnricher implements DeclarationEnr
     return empty();
   }
 
-  private <T extends BaseDeclaration & TypedDeclaration> void declareCustomType(T declaration, MetadataType overrideType) {
+  private <T extends BaseDeclaration & TypedDeclaration> void declareCustomType(T declaration, MetadataType target) {
     MetadataType type = declaration.getType();
     Class<?> clazz = getType(type).orElseThrow(() -> new IllegalStateException("Could not find class in type [" + type + "]"));
     Set<TypeAnnotation> a = new HashSet<>(asList(new ClassInformationAnnotation(clazz), new CustomDefinedStaticTypeAnnotation()));
-    declaration.setType(enricher.enrich(overrideType, a), false);
+    declaration.setType(enricher.enrich(target, a), false);
   }
 
   private Optional<MetadataType> getCustomStaticType(Class<?> resolver) {
