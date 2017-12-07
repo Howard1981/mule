@@ -16464,7 +16464,145 @@
       "kind": "source"
     },
     {
-      "hasResponse": false,
+      "hasResponse": true,
+      "successCallback": {
+        "parameterGroupModels": [
+          {
+            "parameters": [
+              {
+                "type": {
+                  "format": "xml",
+                  "type": "@ref:shiporder"
+                },
+                "hasDynamicType": false,
+                "required": true,
+                "isConfigOverride": false,
+                "expressionSupport": "SUPPORTED",
+                "role": "BEHAVIOUR",
+                "dslConfiguration": {
+                  "allowsInlineDefinition": true,
+                  "allowsReferences": true,
+                  "allowTopLevelDefinition": false
+                },
+                "layoutModel": {
+                  "password": false,
+                  "text": false,
+                  "query": false,
+                  "order": 2
+                },
+                "allowedStereotypeModels": [],
+                "name": "order",
+                "description": "",
+                "modelProperties": {}
+              }
+            ],
+            "exclusiveParametersModels": [],
+            "showInDsl": false,
+            "name": "General",
+            "description": "",
+            "modelProperties": {}
+          }
+        ],
+        "name": "onSuccess",
+        "description": "",
+        "modelProperties": {}
+      },
+      "errorCallback": {
+        "parameterGroupModels": [
+          {
+            "parameters": [
+              {
+                "type": {
+                  "format": "json",
+                  "type": "Object",
+                  "annotations": {
+                    "label": "Person",
+                    "classInformation": {
+                      "classname": "java.io.InputStream",
+                      "hasDefaultConstructor": true,
+                      "isInterface": false,
+                      "isInstantiable": false,
+                      "isAbstract": true,
+                      "isFinal": false,
+                      "implementedInterfaces": [
+                        "java.io.Closeable"
+                      ],
+                      "parent": "",
+                      "genericTypes": [],
+                      "isMap": false
+                    }
+                  },
+                  "open": {
+                    "type": "Any"
+                  },
+                  "fields": [
+                    {
+                      "key": {
+                        "name": "firstName",
+                        "required": "true"
+                      },
+                      "model": {
+                        "type": "String"
+                      }
+                    },
+                    {
+                      "key": {
+                        "name": "lastName",
+                        "required": "true"
+                      },
+                      "model": {
+                        "type": "String"
+                      }
+                    },
+                    {
+                      "key": {
+                        "name": "age"
+                      },
+                      "model": {
+                        "type": "Number",
+                        "annotations": {
+                          "range": {
+                            "from": 0
+                          },
+                          "int": {}
+                        }
+                      }
+                    }
+                  ]
+                },
+                "hasDynamicType": false,
+                "required": true,
+                "isConfigOverride": false,
+                "expressionSupport": "SUPPORTED",
+                "role": "BEHAVIOUR",
+                "dslConfiguration": {
+                  "allowsInlineDefinition": true,
+                  "allowsReferences": true,
+                  "allowTopLevelDefinition": false
+                },
+                "layoutModel": {
+                  "password": false,
+                  "text": false,
+                  "query": false,
+                  "order": 3
+                },
+                "allowedStereotypeModels": [],
+                "name": "person",
+                "description": "",
+                "modelProperties": {}
+              }
+            ],
+            "exclusiveParametersModels": [],
+            "showInDsl": false,
+            "name": "General",
+            "description": "",
+            "modelProperties": {}
+          }
+        ],
+        "name": "onError",
+        "description": "",
+        "modelProperties": {}
+      },
       "output": {
         "type": {
           "format": "java",

@@ -6,6 +6,8 @@
  */
 package org.mule.runtime.module.extension.internal.resources;
 
+import static java.lang.Boolean.FALSE;
+import static java.lang.Boolean.TRUE;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptySet;
